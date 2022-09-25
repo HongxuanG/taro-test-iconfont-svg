@@ -32,7 +32,7 @@ export class FormStore {
     }
   }
   // 获取表单项对应的数据  返回数组
-  getField(names?: string[]): any[]{
+  getFields(names?: string[]): any[]{
     if(!names){
       return [this.store]
     }
@@ -40,7 +40,7 @@ export class FormStore {
       return this.store[name]
     })
   }
-  setField(fields: FieldMeta[]){
+  setFields(fields: FieldMeta[]){
     const newStore = {
       ...this.store,
       ...fields.reduce((acc, next)=>{

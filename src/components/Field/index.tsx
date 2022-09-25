@@ -1,5 +1,5 @@
 import { useFormContext } from "@/context/formContext";
-import React, { FC, useCallback, useMemo, useRef } from "react";
+import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export interface FieldProps {
   children: React.ReactNode;
@@ -15,13 +15,18 @@ export const getTargetValue = (e: any) => {
 // 抽象成表单项组件
 export const Field: FC<FieldProps> = props => {
   const { children, name } = props;
-  const { setFields, fieldsStore } = useFormContext();
+  const { formStore } = useFormContext();
 
-  const value = fieldsStore[name]
+  // const value = fieldsStore[name]
+  // 自己维护自己的状态
+  const [value, setValue] = useState(()=>formStore.getFields([name])[0])
 
-  const onChange = useCallback((e: any)=>{
-    setFields([{name, value: getTargetValue(e)}])
-  }, [name, setFields])
+  const onChange = useCallback(
+    (e: any) => {
+      formStore.setFields([{ name, value: getTargetValue(e) }]);
+    },
+    [name, formStore]
+  );
 
   const onChangeRef = useRef(onChange)
   onChangeRef.current = onChange
@@ -40,6 +45,18 @@ export const Field: FC<FieldProps> = props => {
       ...children.props
     })
   }, [children, value, elementOnChange])
+
+  useEffect(() => {
+    const unsubscribe = formStore.subScribe((changedFields)=>{
+      const targetField = changedFields.find(changedField=> {
+        name === changedField.name
+      });
+      targetField && setValue(targetField.value)
+    });
+    // 取消订阅
+    return unsubscribe
+  }, [name, formStore]);
+  
 
   return <>{element}</>;
 };

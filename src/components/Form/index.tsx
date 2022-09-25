@@ -5,6 +5,7 @@ import {
   Store
 } from "@/context/formContext";
 import { FormAction, InternalFormAction, useForm } from "@/use/useForm";
+import { FormStore } from "@/utils/formStore";
 import { FC, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 
 
@@ -21,14 +22,19 @@ interface FormProps {
 const XForm: FC<FormProps> = (props) => {
   const { initialValues, onFieldsChange, children, form: formProp } = props
   console.log("重新渲染 input");
-
+  // 默认的 ref
   const defaultForm = useForm()
   const form = (formProp || defaultForm) as InternalFormAction
-  // 所有表单的字段
-  const [fieldsStore, setFieldsStore] = useState<Store>(
-    () => initialValues || {}
-  );
-  const [changedFields, setChangedFields] = useState<FieldMeta[]>([]);
+  // // 所有表单的字段
+  // const [fieldsStore, setFieldsStore] = useState<Store>(
+  //   () => initialValues || {}
+  // );
+
+  const formStore = useMemo(()=>{
+    return new FormStore(initialValues);
+  }, [])
+
+  // const [changedFields, setChangedFields] = useState<FieldMeta[]>([]);
 
   // 确保不变
   const onFieldsChangeRef = useRef(onFieldsChange);
@@ -36,43 +42,33 @@ const XForm: FC<FormProps> = (props) => {
 
   const ctx: FormContextValue = useMemo(() => {
     return {
-      fieldsStore,
-      setFields(fields) {
-        const newStore = {
-          ...fieldsStore,
-          ...fields.reduce((acc, next) => {
-            acc[next.name] = next.value;
-            return acc;
-          }, {} as Store)
-        };
-        setFieldsStore(newStore);
-        setChangedFields(fields);
-      }
+      formStore
     };
-  }, [fieldsStore]);
+  }, [formStore]);
   // 暴露给外部使用的方法
   useImperativeHandle(
     form.__INTERNAL__,
     () => ({
-      getFields(names){
-        if(!names){
-          return [ctx.fieldsStore]
-        }
-        return names.map((name)=>{
-          return ctx.fieldsStore[name]
-        })
+      getFields(names) {
+        return formStore.getFields(names)
       },
-      setFields: ctx.setFields,
+      setFields(fields){
+        formStore.setFields(fields);
+      }
     }),
-    [ctx.fieldsStore, ctx.setFields]
+    [formStore]
   );
 
   useEffect(() => {
-    onFieldsChangeRef.current?.({
-      changedFields,
-      fieldsStore
+    const unsubScribe = formStore.subScribe(changedFields => {
+      onFieldsChangeRef.current?.({
+        changedFields,
+        fieldsStore: formStore.getFields
+      });
     });
-  }, [changedFields, fieldsStore]);
+    // 组件卸载的时候取消订阅
+    return unsubScribe;
+  }, [formStore]);
 
   return <FormContext.Provider value={ctx}>{children}</FormContext.Provider>;
 };

@@ -1,3 +1,4 @@
+import { FormStore } from "@/utils/formStore";
 import React, { useContext } from "react";
 /**
  * [name]: {
@@ -13,8 +14,9 @@ export interface FieldMeta {
 }
 
 export interface FormContextValue {
-  fieldsStore: Store;
-  setFields: (fields: FieldMeta[]) => void;
+  // fieldsStore: Store;
+  // setFields: (fields: FieldMeta[]) => void;
+  formStore: FormStore
 }
 
 export const FormContext = React.createContext<FormContextValue | null>(null);
