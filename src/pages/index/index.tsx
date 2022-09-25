@@ -30,14 +30,12 @@ export default () => {
         <View>Input1</View>
         <XInput
           onChange={value => onChange(value, "inputValue1")}
-          value={state.inputValue1}
         ></XInput>
       </View>
       <View>
         <View>Input2</View>
         <XInput
           onChange={value => onChange(value, "inputValue2")}
-          value={state.inputValue2}
         ></XInput>
       </View>
     </View>

@@ -1,20 +1,25 @@
-import { Input, View } from "@tarojs/components"
-import { FC } from "react"
+import { useWatch } from "@/use/useWatch";
+import { Input, View } from "@tarojs/components";
+import { FC, useEffect, useState } from "react";
 
 interface PropsType {
-  value: string
-  onChange: (value: string) => void
+  onChange: (value: string) => void;
 }
 
-const XInput:FC<PropsType> = ({value, onChange}) => {
-  console.log("重新渲染 input");
+const XInput: FC<PropsType> = ({ onChange }) => {
+  const foo = useWatch("foo");
+  const [value, setValue] = useState(foo + "bar");
+  useEffect(() => {
+    setValue(foo + "bar");
+  }, [foo]);
+
   return (
-    <View>
-      <View>{value}</View>
-      <Input onInput={(e) => {
+    <Input
+      onInput={e => {
         onChange(e.detail.value);
-      }}></Input>
-    </View>
+      }}
+      value={value}
+    ></Input>
   );
-}
-export default XInput
+};
+export default XInput;
