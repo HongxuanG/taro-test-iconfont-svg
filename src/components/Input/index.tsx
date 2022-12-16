@@ -1,7 +1,7 @@
 import { useWatch } from "@/use/useWatch";
 import { Input, View } from "@tarojs/components";
 import { FC, useEffect, useState } from "react";
-
+import style from './index.module.scss'
 interface PropsType {
   onChange: (value: string) => void;
 }
